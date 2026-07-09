@@ -28,8 +28,9 @@
 window.TERMINAL = {
   profile: {
     name: "DMICO",
-    tagline: "Vibe-coded tools, games, and research by Damico. Built in Sibu, Sarawak.",
-    avatar: "./assets/avatar.png"
+    tagline: "Vibe-coded projects by Damico.",
+    /* bump the ?v number whenever you replace the image, it defeats stale caches */
+    avatar: "./assets/avatar.png?v=2"
   },
 
   /* Social strip under the header. hidden: true to park one. */

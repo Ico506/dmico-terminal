@@ -78,7 +78,7 @@ The token lives only in that browser's localStorage. It can touch only this one 
 - **Stale page after pushing a change?** Bump `CACHE_VERSION` in `sw.js`. Content-only edits to `links.js` usually show up fine, but CSS/JS changes hide behind the old cache until the version bumps.
 - **GitHub Pages is not instant.** A push takes ~1 minute to go live. Not broken, just brewing.
 - **The share preview (WhatsApp/IG) is hard-coded** in `index.html` OG tags and `assets/og-image.png`. Changing your tagline in `links.js` does not update the share preview; edit both if the wording matters.
-- **Avatar:** replace `assets/avatar.png` with a square image, keep the same filename, done. Same for the OG image.
+- **Avatar:** replace `assets/avatar.png` with a square image, keep the same filename, then bump the `?v=` number on the avatar path in `links.js` (browsers cache images hard and the version bump forces the refresh). Same trick works for any replaced image.
 - **Emoji icons vs thumbs:** `icon` is an emoji, `thumb` is an image path. If both exist, `thumb` wins.
 - **Never commit a token, an API key, or anything secret to this repo.** It is public. The design needs no secrets; keep it that way.
 - **QR code** (`assets/qr-dmico-terminal.png`) points at the GitHub Pages URL. If you ever buy a custom domain, regenerate it (any free QR generator, ink `#45301E` on `#F4EBD2` matches the brand).

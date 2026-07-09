@@ -1,0 +1,338 @@
+/* ============================================================
+   DMICO TERMINAL — departure board styles
+   Tokens are the dmico-hub palette, verbatim. Source of truth:
+   MUSTREAD-NEWCHAT/dmico-brand-design-context.md
+   ============================================================ */
+
+:root {
+  --paper: #F4EBD2;
+  --paper-deep: #EADCBD;
+  --surface: #FEFAE0;
+  --surface-2: #FFFDF4;
+  --ink: #45301E;
+  --ink-soft: #7C6A4F;
+  --ink-faint: #A89A7C;
+  --line: #E3D7BA;
+
+  --accent: #5F6F52;
+  --accent-deep: #4B5840;
+  --accent-wash: rgba(95, 111, 82, 0.14);
+
+  --lantern: #C4661F;
+  --lantern-glow: rgba(196, 102, 31, 0.38);
+
+  --clay: #8A3F1E;
+  --amber: #B08A2A;
+
+  --radius: 14px; --radius-lg: 22px; --radius-pill: 999px;
+  --shadow: 0 1px 2px rgba(69, 48, 30, 0.05), 0 8px 24px rgba(69, 48, 30, 0.07);
+
+  --display: "Zen Maru Gothic", system-ui, sans-serif;
+  --body: "Zen Kaku Gothic New", system-ui, sans-serif;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { -webkit-text-size-adjust: 100%; }
+
+body {
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--body);
+  line-height: 1.55;
+  min-height: 100vh;
+  padding: 20px 16px 40px;
+}
+
+.wrap {
+  max-width: 560px;
+  margin: 0 auto;
+}
+
+/* ---------- identity header (airport information sign) ---------- */
+
+.board-header {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow);
+  padding: 22px 20px 18px;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.board-header::before {
+  /* the sign's accent strip */
+  content: "";
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 6px;
+  background: linear-gradient(90deg, var(--accent) 0%, var(--accent) 70%, var(--lantern) 70%);
+}
+
+.avatar {
+  width: 84px;
+  height: 84px;
+  border-radius: 50%;
+  border: 3px solid var(--surface-2);
+  box-shadow: 0 0 0 1px var(--line), var(--shadow);
+  object-fit: cover;
+  margin-bottom: 10px;
+}
+
+.board-title {
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: 1.9rem;
+  letter-spacing: 0.14em;
+}
+
+.board-sub {
+  font-family: var(--display);
+  font-size: 0.72rem;
+  font-weight: 500;
+  letter-spacing: 0.3em;
+  color: var(--ink-faint);
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+
+.tagline {
+  color: var(--ink-soft);
+  font-size: 0.92rem;
+  max-width: 40ch;
+  margin: 0 auto;
+}
+
+/* ---------- socials strip ---------- */
+
+.socials {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 16px 0 4px;
+}
+
+.social-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 40px;
+  padding: 6px 15px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-pill);
+  box-shadow: var(--shadow);
+  color: var(--ink);
+  font-family: var(--display);
+  font-weight: 500;
+  font-size: 0.85rem;
+  text-decoration: none;
+  transition: transform 0.15s ease, border-color 0.15s ease;
+}
+
+.social-pill:hover, .social-pill:focus-visible {
+  transform: translateY(-2px);
+  border-color: var(--accent);
+}
+
+.social-pill svg { width: 16px; height: 16px; fill: var(--accent-deep); }
+
+/* ---------- sections ("terminals") ---------- */
+
+.terminal-section { margin-top: 26px; }
+
+.terminal-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+  padding: 0 4px;
+}
+
+.terminal-badge {
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: 0.8rem;
+  background: var(--ink);
+  color: var(--surface);
+  border-radius: 8px;
+  padding: 2px 9px;
+  letter-spacing: 0.08em;
+}
+
+.terminal-name {
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: 0.78rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+
+.terminal-head::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: var(--line);
+}
+
+/* ---------- departure cards (gates) ---------- */
+
+.gate-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  list-style: none;
+}
+
+.gate-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 14px 16px;
+  min-height: 64px;
+  color: inherit;
+  text-decoration: none;
+  transition: transform 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+a.gate-card:hover, a.gate-card:focus-visible {
+  transform: translateY(-2px);
+  border-color: var(--accent);
+  box-shadow: 0 2px 4px rgba(69,48,30,0.06), 0 12px 28px rgba(69,48,30,0.10);
+}
+
+.gate-card.is-static { cursor: default; }
+
+.gate-badge {
+  flex: none;
+  width: 46px;
+  height: 46px;
+  display: grid;
+  place-items: center;
+  background: var(--paper-deep);
+  border-radius: 12px;
+  font-size: 1.35rem;
+  overflow: hidden;
+}
+
+.gate-badge img { width: 100%; height: 100%; object-fit: cover; }
+
+.gate-info { flex: 1; min-width: 0; }
+
+.gate-no {
+  font-family: var(--display);
+  font-weight: 500;
+  font-size: 0.62rem;
+  letter-spacing: 0.24em;
+  color: var(--ink-faint);
+  text-transform: uppercase;
+}
+
+.gate-title {
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: 1.02rem;
+  line-height: 1.3;
+}
+
+.gate-desc {
+  font-size: 0.82rem;
+  color: var(--ink-soft);
+  margin-top: 1px;
+}
+
+/* ---------- status chips ---------- */
+
+.chip {
+  flex: none;
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: 0.6rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  border-radius: var(--radius-pill);
+  padding: 4px 10px;
+  white-space: nowrap;
+}
+
+.chip-now-boarding { background: var(--lantern); color: var(--surface-2); animation: lantern-pulse 2.4s ease-in-out infinite; }
+.chip-boarding-soon { background: rgba(176, 138, 42, 0.16); color: var(--amber); }
+.chip-arrived { background: var(--accent-wash); color: var(--accent-deep); }
+.chip-delayed { background: rgba(138, 63, 30, 0.12); color: var(--clay); }
+
+@keyframes lantern-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 var(--lantern-glow); }
+  50% { box-shadow: 0 0 0 7px rgba(196, 102, 31, 0); }
+}
+
+/* ---------- featured card: the lit lantern ---------- */
+
+.gate-card.is-featured {
+  border-color: var(--lantern);
+  box-shadow: 0 0 0 1px var(--lantern), 0 4px 26px var(--lantern-glow);
+  background: var(--surface-2);
+}
+
+.gate-card.is-featured .gate-badge { background: rgba(196, 102, 31, 0.14); }
+.gate-card.is-featured .gate-no { color: var(--lantern); }
+
+/* ---------- entrance animation ---------- */
+
+.gate-card, .board-header, .socials {
+  animation: arrive 0.45s ease both;
+}
+
+.gate-card:nth-child(1) { animation-delay: 0.05s; }
+.gate-card:nth-child(2) { animation-delay: 0.11s; }
+.gate-card:nth-child(3) { animation-delay: 0.17s; }
+.gate-card:nth-child(4) { animation-delay: 0.23s; }
+.gate-card:nth-child(5) { animation-delay: 0.29s; }
+.gate-card:nth-child(6) { animation-delay: 0.35s; }
+
+@keyframes arrive {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gate-card, .board-header, .socials { animation: none; }
+  .chip-now-boarding { animation: none; }
+  .gate-card, .social-pill { transition: none; }
+}
+
+/* ---------- footer ---------- */
+
+footer {
+  margin-top: 34px;
+  text-align: center;
+  font-size: 0.72rem;
+  color: var(--ink-faint);
+  font-family: var(--display);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+footer a { color: var(--ink-soft); }
+
+/* ---------- focus visibility ---------- */
+
+a:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+  border-radius: var(--radius);
+}
+
+/* ---------- slightly wider screens ---------- */
+
+@media (min-width: 600px) {
+  body { padding-top: 40px; }
+  .board-title { font-size: 2.2rem; }
+}

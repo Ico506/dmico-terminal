@@ -284,6 +284,36 @@ a.gate-card:hover, a.gate-card:focus-visible {
 .gate-card.is-featured .gate-badge { background: rgba(196, 102, 31, 0.14); }
 .gate-card.is-featured .gate-no { color: var(--lantern); }
 
+/* ---------- embed cards (trailers, demos) ---------- */
+
+.gate-card.is-embed { flex-wrap: wrap; }
+
+.gate-title-link {
+  color: inherit;
+  text-decoration: underline;
+  text-decoration-color: var(--accent);
+  text-underline-offset: 3px;
+}
+
+.gate-title-link:hover { color: var(--accent-deep); }
+
+.embed-wrap {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  border-radius: 10px;
+  overflow: hidden;
+  margin-top: 12px;
+  background: var(--paper-deep);
+  border: 1px solid var(--line);
+}
+
+.embed-wrap iframe {
+  width: 100%;
+  height: 100%;
+  border: 0;
+  display: block;
+}
+
 /* ---------- entrance animation ---------- */
 
 .gate-card, .board-header, .socials {

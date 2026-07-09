@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DMICO Terminal — Board Editor</title>
+  <meta name="robots" content="noindex" />
+  <link rel="icon" type="image/png" sizes="32x32" href="./icons/favicon-32.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;500;700&family=Zen+Maru+Gothic:wght@400;500;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="./styles.css" />
+  <style>
+    /* editor-only styles, on top of the board tokens */
+    body { padding-bottom: 80px; }
+    .wrap { max-width: 640px; }
+    .ed-note {
+      background: var(--accent-wash);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 12px 16px;
+      font-size: 0.85rem;
+      color: var(--ink-soft);
+      margin: 14px 0 4px;
+    }
+    .ed-block {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 16px;
+      margin-top: 14px;
+    }
+    .ed-block h2 {
+      font-family: var(--display);
+      font-size: 0.78rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--ink-soft);
+      margin-bottom: 10px;
+    }
+    .ed-card {
+      background: var(--surface-2);
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 12px;
+      margin-top: 10px;
+    }
+    label {
+      display: block;
+      font-size: 0.72rem;
+      font-family: var(--display);
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--ink-faint);
+      margin: 8px 0 2px;
+    }
+    input[type="text"], input[type="url"], select, textarea {
+      width: 100%;
+      min-height: 40px;
+      padding: 8px 10px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fff;
+      color: var(--ink);
+      font-family: var(--body);
+      font-size: 0.9rem;
+    }
+    input:focus, select:focus, textarea:focus { outline: 2px solid var(--accent); }
+    .row { display: flex; gap: 10px; }
+    .row > div { flex: 1; min-width: 0; }
+    .checks { display: flex; gap: 16px; margin-top: 10px; flex-wrap: wrap; }
+    .checks label { display: flex; align-items: center; gap: 6px; margin: 0; cursor: pointer; }
+    .checks input { width: 16px; height: 16px; min-height: 0; }
+    button {
+      font-family: var(--display);
+      font-weight: 700;
+      font-size: 0.8rem;
+      border: 1px solid var(--line);
+      border-radius: var(--radius-pill);
+      background: var(--surface);
+      color: var(--ink);
+      padding: 8px 16px;
+      cursor: pointer;
+      min-height: 40px;
+    }
+    button:hover { border-color: var(--accent); }
+    button.primary { background: var(--accent); border-color: var(--accent); color: var(--surface-2); }
+    button.primary:hover { background: var(--accent-deep); }
+    button.danger { color: var(--clay); }
+    button.tiny { min-height: 32px; padding: 4px 12px; font-size: 0.7rem; }
+    .card-actions { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
+    .ed-toolbar {
+      position: fixed; bottom: 0; left: 0; right: 0;
+      background: var(--surface);
+      border-top: 1px solid var(--line);
+      padding: 12px 16px;
+      display: flex; gap: 10px; justify-content: center;
+      box-shadow: 0 -8px 24px rgba(69,48,30,0.08);
+    }
+    #output {
+      width: 100%; height: 300px;
+      font-family: ui-monospace, monospace;
+      font-size: 0.75rem;
+      white-space: pre;
+      margin-top: 10px;
+    }
+    .warn { color: var(--clay); font-size: 0.82rem; margin-top: 8px; }
+    .ok { color: var(--accent-deep); font-size: 0.82rem; margin-top: 8px; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header class="board-header">
+      <div class="board-sub">Ground Crew Only</div>
+      <h1 class="board-title">Board Editor</h1>
+      <p class="tagline">Fill the form, generate, copy the result into links.js, push. Nothing here is saved anywhere: this page is a links.js generator, not an admin panel.</p>
+    </header>
+
+    <div class="ed-note">
+      Loads the current <strong>links.js</strong> from this folder. When done, tap <strong>Generate links.js</strong> below, copy everything from the output box, replace the contents of links.js, and push. Comments in the old file are replaced by a standard header.
+    </div>
+
+    <div id="editor-root"></div>
+
+    <div class="ed-block">
+      <h2>Output</h2>
+      <div id="featured-warning"></div>
+      <textarea id="output" readonly placeholder="Tap Generate below."></textarea>
+      <div class="card-actions">
+        <button class="primary" id="btn-copy">Copy to clipboard</button>
+        <button id="btn-download">Download links.js</button>
+      </div>
+      <div id="copy-status"></div>
+    </div>
+  </div>
+
+  <div class="ed-toolbar">
+    <button class="primary" id="btn-generate">Generate links.js</button>
+    <button id="btn-add-section">+ Add section</button>
+  </div>
+
+  <script src="./links.js"></script>
+  <script>
+  (function () {
+    "use strict";
+
+    var state = JSON.parse(JSON.stringify(window.TERMINAL || { profile: {}, socials: [], sections: [], settings: {} }));
+    state.profile = state.profile || {};
+    state.socials = state.socials || [];
+    state.sections = state.sections || [];
+    state.settings = state.settings || {};
+
+    var STATUSES = ["now-boarding", "boarding-soon", "arrived", "delayed"];
+    var ICONS = ["github", "instagram", "xhs", "mail"];
+    var root = document.getElementById("editor-root");
+
+    function el(tag, cls, text) {
+      var n = document.createElement(tag);
+      if (cls) n.className = cls;
+      if (text !== undefined) n.textContent = text;
+      return n;
+    }
+
+    function field(labelText, value, onInput, type) {
+      var wrap = el("div");
+      wrap.appendChild(el("label", null, labelText));
+      var input = el(type === "select" ? "select" : "input");
+      if (type !== "select") { input.type = "text"; input.value = value || ""; }
+      input.addEventListener("input", function () { onInput(input.value); });
+      wrap.appendChild(input);
+      return { wrap: wrap, input: input };
+    }
+
+    function check(labelText, value, onChange) {
+      var lab = el("label");
+      var box = el("input");
+      box.type = "checkbox";
+      box.checked = !!value;
+      box.addEventListener("change", function () { onChange(box.checked); });
+      lab.appendChild(box);
+      lab.appendChild(document.createTextNode(labelText));
+      return lab;
+    }
+
+    function moveItem(arr, i, dir) {
+      var j = i + dir;
+      if (j < 0 || j >= arr.length) return;
+      var tmp = arr[i]; arr[i] = arr[j]; arr[j] = tmp;
+      render();
+    }
+
+    /* ---------- render ---------- */
+
+    function render() {
+      root.innerHTML = "";
+      renderProfile();
+      renderSocials();
+      state.sections.forEach(renderSection);
+      renderSettings();
+    }
+
+    function renderProfile() {
+      var block = el("div", "ed-block");
+      block.appendChild(el("h2", null, "Profile"));
+      block.appendChild(field("Name", state.profile.name, function (v) { state.profile.name = v; }).wrap);
+      block.appendChild(field("Tagline", state.profile.tagline, function (v) { state.profile.tagline = v; }).wrap);
+      block.appendChild(field("Avatar path", state.profile.avatar, function (v) { state.profile.avatar = v; }).wrap);
+      root.appendChild(block);
+    }
+
+    function renderSocials() {
+      var block = el("div", "ed-block");
+      block.appendChild(el("h2", null, "Socials"));
+      state.socials.forEach(function (s, i) {
+        var card = el("div", "ed-card");
+        var row = el("div", "row");
+        row.appendChild(field("Label", s.label, function (v) { s.label = v; }).wrap);
+        var iconField = field("Icon", null, function (v) { s.icon = v; }, "select");
+        ICONS.forEach(function (ic) {
+          var opt = el("option", null, ic);
+          opt.value = ic;
+          if (s.icon === ic) opt.selected = true;
+          iconField.input.appendChild(opt);
+        });
+        row.appendChild(iconField.wrap);
+        card.appendChild(row);
+        card.appendChild(field("URL", s.url, function (v) { s.url = v; }).wrap);
+        var checks = el("div", "checks");
+        checks.appendChild(check("Hidden", s.hidden, function (v) { if (v) s.hidden = true; else delete s.hidden; }));
+        card.appendChild(checks);
+        card.appendChild(cardActions(state.socials, i));
+        block.appendChild(card);
+      });
+      var add = el("button", "tiny", "+ Add social");
+      add.style.marginTop = "10px";
+      add.addEventListener("click", function () {
+        state.socials.push({ label: "New", url: "https://", icon: "github" });
+        render();
+      });
+      block.appendChild(add);
+      root.appendChild(block);
+    }
+
+    function cardActions(arr, i) {
+      var actions = el("div", "card-actions");
+      var up = el("button", "tiny", "↑ Up");
+      up.addEventListener("click", function () { moveItem(arr, i, -1); });
+      var down = el("button", "tiny", "↓ Down");
+      down.addEventListener("click", function () { moveItem(arr, i, 1); });
+      var del = el("button", "tiny danger", "Delete");
+      del.addEventListener("click", function () {
+        if (confirm("Delete this item? (Tip: Hidden parks it instead)")) { arr.splice(i, 1); render(); }
+      });
+      actions.appendChild(up); actions.appendChild(down); actions.appendChild(del);
+      return actions;
+    }
+
+    function renderSection(section, si) {
+      var block = el("div", "ed-block");
+      var row = el("div", "row");
+      row.appendChild(field("Terminal letter", section.terminal, function (v) { section.terminal = v; }).wrap);
+      row.appendChild(field("Section name", section.name, function (v) { section.name = v; }).wrap);
+      block.appendChild(row);
+
+      section.cards = section.cards || [];
+      section.cards.forEach(function (card, ci) {
+        var c = el("div", "ed-card");
+        c.appendChild(field("Title", card.title, function (v) { card.title = v; }).wrap);
+        c.appendChild(field("Description", card.desc, function (v) { card.desc = v; }).wrap);
+        c.appendChild(field("URL (empty = not clickable yet)", card.url, function (v) { card.url = v; }).wrap);
+
+        var r2 = el("div", "row");
+        var statusField = field("Status", null, function (v) { card.status = v; }, "select");
+        STATUSES.forEach(function (st) {
+          var opt = el("option", null, st);
+          opt.value = st;
+          if ((card.status || "arrived") === st) opt.selected = true;
+          statusField.input.appendChild(opt);
+        });
+        r2.appendChild(statusField.wrap);
+        r2.appendChild(field("Icon (emoji)", card.icon, function (v) { card.icon = v; }).wrap);
+        c.appendChild(r2);
+
+        var r3 = el("div", "row");
+        r3.appendChild(field("Thumb path (optional)", card.thumb, function (v) { if (v) card.thumb = v; else delete card.thumb; }).wrap);
+        r3.appendChild(field("Embed URL (optional)", card.embed, function (v) { if (v) card.embed = v; else delete card.embed; }).wrap);
+        c.appendChild(r3);
+
+        var r4 = el("div", "row");
+        r4.appendChild(field("Show from (ISO, optional)", card.showFrom, function (v) { if (v) card.showFrom = v; else delete card.showFrom; }).wrap);
+        r4.appendChild(field("Show until (ISO, optional)", card.showUntil, function (v) { if (v) card.showUntil = v; else delete card.showUntil; }).wrap);
+        c.appendChild(r4);
+
+        var checks = el("div", "checks");
+        checks.appendChild(check("Featured (max 1!)", card.featured, function (v) { if (v) card.featured = true; else delete card.featured; }));
+        checks.appendChild(check("Hidden", card.hidden, function (v) { if (v) card.hidden = true; else delete card.hidden; }));
+        c.appendChild(checks);
+
+        c.appendChild(cardActions(section.cards, ci));
+        block.appendChild(c);
+      });
+
+      var actions = el("div", "card-actions");
+      var addCard = el("button", "tiny", "+ Add card");
+      addCard.addEventListener("click", function () {
+        section.cards.push({ title: "New project", desc: "", url: "", status: "boarding-soon", icon: "🔗" });
+        render();
+      });
+      var delSection = el("button", "tiny danger", "Delete section");
+      delSection.addEventListener("click", function () {
+        if (confirm("Delete this whole section and its cards?")) { state.sections.splice(si, 1); render(); }
+      });
+      actions.appendChild(addCard);
+      actions.appendChild(delSection);
+      block.appendChild(actions);
+      root.appendChild(block);
+    }
+
+    function renderSettings() {
+      var block = el("div", "ed-block");
+      block.appendChild(el("h2", null, "Settings"));
+      block.appendChild(field("GoatCounter code (empty = off)", state.settings.goatcounter, function (v) { state.settings.goatcounter = v; }).wrap);
+      block.appendChild(el("label", null, "Theme token overrides (JSON, optional)"));
+      var ta = el("textarea");
+      ta.style.height = "80px";
+      ta.value = JSON.stringify(state.settings.tokens || {}, null, 2);
+      ta.addEventListener("input", function () {
+        try {
+          state.settings.tokens = JSON.parse(ta.value);
+          ta.style.outline = "";
+        } catch (e) {
+          ta.style.outline = "2px solid var(--clay)";
+        }
+      });
+      block.appendChild(ta);
+      root.appendChild(block);
+    }
+
+    /* ---------- generate ---------- */
+
+    var HEADER = [
+      "/* ============================================================",
+      "   DMICO TERMINAL — THE content file. This is your CMS.",
+      "   Edit this file (or use editor.html), push, board updates.",
+      "   Card fields: title, desc, url, status, icon, thumb, featured,",
+      "   hidden, showFrom, showUntil, embed. Statuses: now-boarding,",
+      "   boarding-soon, arrived, delayed. Deep links: #terminal-<letter>.",
+      "   Generated by editor.html on " + new Date().toISOString().slice(0, 10),
+      "   ============================================================ */",
+      ""
+    ].join("\n");
+
+    document.getElementById("btn-generate").addEventListener("click", function () {
+      var featuredCount = 0;
+      state.sections.forEach(function (s) {
+        (s.cards || []).forEach(function (c) { if (c.featured && !c.hidden) featuredCount++; });
+      });
+      var warnBox = document.getElementById("featured-warning");
+      warnBox.innerHTML = "";
+      if (featuredCount > 1) {
+        warnBox.appendChild(el("div", "warn", "Warning: " + featuredCount + " featured cards. The board expects ONE lit lantern."));
+      }
+      document.getElementById("output").value =
+        HEADER + "window.TERMINAL = " + JSON.stringify(state, null, 2) + ";\n";
+      var outEl = document.getElementById("output");
+      if (outEl.scrollIntoView) outEl.scrollIntoView({ behavior: "smooth" });
+    });
+
+    document.getElementById("btn-add-section").addEventListener("click", function () {
+      var used = state.sections.map(function (s) { return s.terminal; });
+      var next = "ABCDEFGH".split("").filter(function (l) { return used.indexOf(l) < 0; })[0] || "X";
+      state.sections.push({ terminal: next, name: "New Terminal", cards: [] });
+      render();
+    });
+
+    document.getElementById("btn-copy").addEventListener("click", function () {
+      var out = document.getElementById("output");
+      if (!out.value) return;
+      navigator.clipboard.writeText(out.value).then(function () {
+        document.getElementById("copy-status").innerHTML = '<div class="ok">Copied. Paste into links.js, save, push.</div>';
+      }, function () {
+        out.select();
+        document.execCommand("copy");
+        document.getElementById("copy-status").innerHTML = '<div class="ok">Copied (fallback). Paste into links.js.</div>';
+      });
+    });
+
+    document.getElementById("btn-download").addEventListener("click", function () {
+      var out = document.getElementById("output");
+      if (!out.value) return;
+      var blob = new Blob([out.value], { type: "text/javascript" });
+      var a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = "links.js";
+      a.click();
+      URL.revokeObjectURL(a.href);
+    });
+
+    render();
+  })();
+  </script>
+</body>
+</html>

@@ -1,7 +1,7 @@
 /* DMICO Terminal service worker — network-first, minimal.
    Bump CACHE_VERSION when shipping changes so old caches clear. */
 
-var CACHE_VERSION = "dmico-terminal-v1";
+var CACHE_VERSION = "dmico-terminal-v2";
 var CORE = [
   "./",
   "./index.html",

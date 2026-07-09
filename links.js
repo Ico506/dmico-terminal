@@ -13,6 +13,16 @@
      hidden      true = card not rendered (park it without deleting)
      showFrom    "2026-08-01T00:00:00+08:00" appear from this time (optional)
      showUntil   ISO datetime, disappear after this time (optional)
+     embed       iframe URL (YouTube embed link, itch.io widget) shown
+                 inside the card, 16:9. Card becomes non-clickable;
+                 the title links to `url` instead (optional)
+
+   Deep links: each section is reachable at #terminal-<letter>,
+   e.g. https://ico506.github.io/dmico-terminal/#terminal-a
+   Handy for pointing each persona's bio at its own section.
+
+   Prefer forms over raw editing? Open editor.html locally,
+   fill the form, copy the generated file back here.
    ============================================================ */
 
 window.TERMINAL = {
@@ -51,7 +61,7 @@ window.TERMINAL = {
       cards: [
         {
           title: "Example game card",
-          desc: "Unhide me when there is a public game to show.",
+          desc: "Unhide me when there is a public game to show. Add an embed URL for a playable widget or trailer.",
           url: "https://example.itch.io/your-game",
           status: "delayed",
           icon: "🎮",
@@ -78,6 +88,15 @@ window.TERMINAL = {
   settings: {
     /* GoatCounter analytics. Create a free account at goatcounter.com,
        pick a code (e.g. "dmico"), put it here. Empty = analytics off. */
-    goatcounter: ""
+    goatcounter: "",
+
+    /* Theme token overrides. Any CSS variable from styles.css can be
+       overridden here without touching the stylesheet. Examples:
+       tokens: {
+         "--accent": "#A9B388",      (laurel green swatch)
+         "--lantern": "#783D19"      (russet swatch)
+       }
+       Delete or leave empty for the default DMICO palette. */
+    tokens: {}
   }
 };

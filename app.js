@@ -91,8 +91,15 @@
   /* ---------- sections + cards ---------- */
 
   function renderCard(card, gateNo) {
-    var isLink = !!card.url;
-    var node = el(isLink ? "a" : "div", "gate-card" + (isLink ? "" : " is-static") + (card.featured ? " is-featured" : ""));
+    /* embed cards must be a <div> (an iframe inside an <a> is invalid),
+       so the title becomes the link instead */
+    var isEmbed = !!card.embed;
+    var isLink = !!card.url && !isEmbed;
+    var cls = "gate-card" +
+      (isLink ? "" : " is-static") +
+      (card.featured ? " is-featured" : "") +
+      (isEmbed ? " is-embed" : "");
+    var node = el(isLink ? "a" : "div", cls);
 
     if (isLink) {
       node.href = card.url;
@@ -114,13 +121,36 @@
 
     var info = el("div", "gate-info");
     info.appendChild(el("div", "gate-no", "Gate " + gateNo));
-    info.appendChild(el("div", "gate-title", card.title));
+    var title = el("div", "gate-title");
+    if (isEmbed && card.url) {
+      var titleLink = el("a", "gate-title-link", card.title);
+      titleLink.href = card.url;
+      titleLink.target = "_blank";
+      titleLink.rel = "noopener";
+      titleLink.addEventListener("click", function () { track("card-" + gateNo.toLowerCase()); });
+      title.appendChild(titleLink);
+    } else {
+      title.textContent = card.title;
+    }
+    info.appendChild(title);
     if (card.desc) info.appendChild(el("div", "gate-desc", card.desc));
     node.appendChild(info);
 
     var status = card.status || "arrived";
     var chip = el("span", "chip chip-" + status, STATUS_LABELS[status] || status);
     node.appendChild(chip);
+
+    if (isEmbed) {
+      var wrap = el("div", "embed-wrap");
+      var frame = el("iframe");
+      frame.src = card.embed;
+      frame.setAttribute("loading", "lazy");
+      frame.setAttribute("allowfullscreen", "");
+      frame.setAttribute("title", card.title + " embed");
+      frame.setAttribute("allow", "accelerometer; encrypted-media; picture-in-picture");
+      wrap.appendChild(frame);
+      node.appendChild(wrap);
+    }
 
     return node;
   }
@@ -134,6 +164,7 @@
       cards.sort(function (a, b) { return (b.featured ? 1 : 0) - (a.featured ? 1 : 0); });
 
       var sec = el("section", "terminal-section");
+      sec.id = "terminal-" + String(section.terminal).toLowerCase();
       var head = el("div", "terminal-head");
       head.appendChild(el("span", "terminal-badge", "T" + section.terminal));
       head.appendChild(el("h2", "terminal-name", section.name));
@@ -162,9 +193,20 @@
     document.head.appendChild(s);
   }
 
+  /* ---------- theme token overrides (settings.tokens) ---------- */
+
+  function applyTokens() {
+    var tokens = DATA.settings && DATA.settings.tokens;
+    if (!tokens) return;
+    Object.keys(tokens).forEach(function (key) {
+      document.documentElement.style.setProperty(key, tokens[key]);
+    });
+  }
+
   /* ---------- boot ---------- */
 
   var root = document.getElementById("terminal");
+  applyTokens();
   renderHeader(root);
   renderSocials(root);
   renderSections(root);

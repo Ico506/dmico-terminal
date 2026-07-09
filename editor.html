@@ -134,6 +134,27 @@
       </div>
       <div id="copy-status"></div>
     </div>
+
+    <div class="ed-block">
+      <h2>Save straight to GitHub (optional)</h2>
+      <div class="ed-note">
+        Skips the copy-paste: commits <strong>links.js</strong> directly to the repo. Needs a
+        <strong>fine-grained personal access token</strong>: GitHub &gt; Settings &gt; Developer settings &gt;
+        Fine-grained tokens &gt; Generate. Repository access: <em>Only select repositories</em> &gt; dmico-terminal.
+        Permissions: <em>Contents: Read and write</em>. Nothing else. The token is kept in THIS browser's
+        localStorage only, never in the repo. GitHub Pages takes about a minute to redeploy after saving.
+      </div>
+      <label>Personal access token</label>
+      <input type="password" id="gh-token" placeholder="github_pat_..." autocomplete="off" />
+      <div class="checks">
+        <label><input type="checkbox" id="gh-remember" /> Remember token on this device</label>
+      </div>
+      <div class="card-actions">
+        <button class="primary" id="btn-github">Generate + commit to GitHub</button>
+        <button class="tiny danger" id="btn-forget">Forget saved token</button>
+      </div>
+      <div id="gh-status"></div>
+    </div>
   </div>
 
   <div class="ed-toolbar">
@@ -396,6 +417,90 @@
       a.download = "links.js";
       a.click();
       URL.revokeObjectURL(a.href);
+    });
+
+    /* ---------- save straight to GitHub (Contents API) ---------- */
+
+    var GH_REPO = "Ico506/dmico-terminal";
+    var GH_FILE = "links.js";
+    var GH_KEY = "dmico_terminal_gh_token";
+
+    var tokenInput = document.getElementById("gh-token");
+    var remember = document.getElementById("gh-remember");
+    var ghStatus = document.getElementById("gh-status");
+
+    var savedToken = null;
+    try { savedToken = localStorage.getItem(GH_KEY); } catch (e) { /* file:// or blocked */ }
+    if (savedToken) { tokenInput.value = savedToken; remember.checked = true; }
+
+    function ghMsg(cls, text) {
+      ghStatus.innerHTML = "";
+      ghStatus.appendChild(el("div", cls, text));
+    }
+
+    function b64Unicode(str) {
+      return btoa(unescape(encodeURIComponent(str)));
+    }
+
+    document.getElementById("btn-forget").addEventListener("click", function () {
+      try { localStorage.removeItem(GH_KEY); } catch (e) {}
+      tokenInput.value = "";
+      remember.checked = false;
+      ghMsg("ok", "Token forgotten on this device.");
+    });
+
+    document.getElementById("btn-github").addEventListener("click", function () {
+      var token = tokenInput.value.trim();
+      if (!token) { ghMsg("warn", "Paste a token first."); return; }
+
+      /* always regenerate so the commit matches the form */
+      document.getElementById("btn-generate").click();
+      var content = document.getElementById("output").value;
+      if (!content) { ghMsg("warn", "Nothing generated."); return; }
+
+      if (remember.checked) {
+        try { localStorage.setItem(GH_KEY, token); } catch (e) {}
+      }
+
+      var apiUrl = "https://api.github.com/repos/" + GH_REPO + "/contents/" + GH_FILE;
+      var headers = {
+        "Authorization": "Bearer " + token,
+        "Accept": "application/vnd.github+json",
+        "X-GitHub-Api-Version": "2022-11-28"
+      };
+
+      ghMsg("ok", "Fetching current file version...");
+
+      fetch(apiUrl, { headers: headers })
+        .then(function (res) {
+          if (res.status === 401) throw new Error("Token rejected (401). Check it has Contents read/write on dmico-terminal.");
+          if (res.status === 404) throw new Error("links.js not found in the repo (404). Has the repo been pushed?");
+          if (!res.ok) throw new Error("GitHub error " + res.status);
+          return res.json();
+        })
+        .then(function (data) {
+          ghMsg("ok", "Committing...");
+          return fetch(apiUrl, {
+            method: "PUT",
+            headers: headers,
+            body: JSON.stringify({
+              message: "Update board via editor.html",
+              content: b64Unicode(content),
+              sha: data.sha
+            })
+          });
+        })
+        .then(function (res) {
+          if (!res.ok) throw new Error("Commit failed (" + res.status + ").");
+          return res.json();
+        })
+        .then(function (data) {
+          var short = data.commit && data.commit.sha ? data.commit.sha.slice(0, 7) : "done";
+          ghMsg("ok", "Committed (" + short + "). GitHub Pages will redeploy in about a minute.");
+        })
+        .catch(function (err) {
+          ghMsg("warn", err.message);
+        });
     });
 
     render();

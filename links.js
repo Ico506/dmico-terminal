@@ -88,7 +88,7 @@ window.TERMINAL = {
   settings: {
     /* GoatCounter analytics. Create a free account at goatcounter.com,
        pick a code (e.g. "dmico"), put it here. Empty = analytics off. */
-    goatcounter: "",
+    goatcounter: "dmico",
 
     /* Theme token overrides. Any CSS variable from styles.css can be
        overridden here without touching the stylesheet. Examples:

@@ -30,7 +30,7 @@ window.TERMINAL = {
     name: "DMICO",
     tagline: "Vibe-coded projects by Damico.",
     /* bump the ?v number whenever you replace the image, it defeats stale caches */
-    avatar: "./assets/avatar.png?v=2"
+    avatar: "./assets/avatar.png?v=3"
   },
 
   /* Social strip under the header. hidden: true to park one. */

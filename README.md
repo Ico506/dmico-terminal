@@ -17,7 +17,7 @@ Everything editable lives in **`links.js`**. Edit, commit, push via GitHub Deskt
 - Turn on analytics: create a free GoatCounter account, put your code in `settings.goatcounter`.
 - Recolor the whole board: override any CSS variable in `settings.tokens`, no stylesheet edits needed.
 
-**Hate editing JS by hand?** Open `editor.html` (locally or on the live site). It loads the current board into a form: add cards, flip statuses, reorder, then Generate, copy the output into `links.js`, push. It saves nothing anywhere; it is a file generator, not an admin panel, so the no-login security model stays intact.
+**Hate editing JS by hand?** Open `editor.html` directly (locally or at `/editor.html` on the live site; no footer link, bookmark it). It loads the current board into a form: add cards, flip statuses, reorder, then Generate, copy the output into `links.js`, push. It saves nothing anywhere; it is a file generator, not an admin panel, so the no-login security model stays intact.
 
 **Deep links:** each section is reachable at `#terminal-a`, `#terminal-b`, etc. Point each persona's bio at its own section if you like.
 

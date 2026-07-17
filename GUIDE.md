@@ -62,7 +62,7 @@ Your extended swatches: laurel green `#A9B388`, lemon meringue `#F9EBC7`, camel 
 
 1. **At the desk:** edit `links.js` in any editor, push with GitHub Desktop. The workhorse.
 2. **On the phone, quick fix:** github.com > repo > `links.js` > pencil icon > commit. Nothing to install.
-3. **Form mode (no code at all):** open the **ground crew** link in the page footer (or `editor.html` directly). Edit with forms, then either copy-paste the output into `links.js`, or use **Generate + commit to GitHub** to push straight from the browser.
+3. **Form mode (no code at all):** open `editor.html` directly (bookmark `https://ico506.github.io/dmico-terminal/editor.html`; the footer link was removed on purpose). Edit with forms, then either copy-paste the output into `links.js`, or use **Generate + commit to GitHub** to push straight from the browser.
 
 ### Setting up the direct-commit button (one-time, 5 minutes)
 

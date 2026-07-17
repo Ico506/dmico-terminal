@@ -49,8 +49,8 @@ window.TERMINAL = {
         {
           title: "Gaji Decoder",
           desc: "What your gaji actually looks like after EPF, SOCSO, EIS and PCB. Verdict included.",
-          url: "",
-          status: "boarding-soon",
+          url: "https://dmico-web.vercel.app/gaji",
+          status: "now-boarding",
           icon: "💸",
           featured: true
         }
